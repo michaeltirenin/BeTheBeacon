@@ -5,6 +5,7 @@
 //  Created by Michael Tirenin on 8/21/14.
 //  Copyright (c) 2014 Michael Tirenin. All rights reserved.
 //
+// http://www.codemag.com/Article/1405051
 
 import UIKit
 import CoreBluetooth
@@ -16,22 +17,39 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate, CLLocationM
 
     @IBOutlet weak var startButtonOutlet: UIButton!
     
-    let myUUID = NSUUID(UUIDString: "15D88457-4163-40D8-A795-F8A65CD8628B")
+    @IBOutlet weak var beaconFoundLabel: UILabel!
+    @IBOutlet weak var uuidLabel: UILabel!
+    @IBOutlet weak var majorLabel: UILabel!
+    @IBOutlet weak var minorLabel: UILabel!
+    @IBOutlet weak var accuracyLabel: UILabel!
+    @IBOutlet weak var distanceLabel: UILabel!
+    @IBOutlet weak var rssiLabel: UILabel!
+    @IBOutlet weak var regionStatusLabel: UILabel!
+    
+//    let myUUID = NSUUID(UUIDString: "15D88457-4163-40D8-A795-F8A65CD8628B") //iPhone
+    let myUUID = NSUUID(UUIDString: "DBD9A703-CA23-4B95-9B63-1E847C1CE61A") //iPad
     let myIdentifier = "com.michaeltirenin.beacons.codefellows"
     
     var beaconData = NSDictionary()
     var beaconRegion = CLBeaconRegion()
     var peripheralManager = CBPeripheralManager()
     
+    var beacons = []
+    
     var locationManager = CLLocationManager()
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        // initialize beacon region
         self.beaconRegion = CLBeaconRegion(proximityUUID: myUUID, identifier: myIdentifier)
         self.beaconData = beaconRegion.peripheralDataWithMeasuredPower(nil)
         
         self.peripheralManager = CBPeripheralManager(delegate: self, queue: nil)
+        
+        self.locationManager.delegate = self
+        
+        self.locationManager.startMonitoringForRegion(self.beaconRegion)
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -39,12 +57,19 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate, CLLocationM
         
         self.startButtonOutlet.titleLabel.text = "Start"
     }
+    
+    override func viewDidAppear(animated: Bool) {
+        locationManager.startRangingBeaconsInRegion(beaconRegion)
+    }
+    
+    override func viewDidDisappear(animated: Bool) {
+        locationManager.stopRangingBeaconsInRegion(beaconRegion)
+    }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
-
+    
     @IBAction func startButton(sender: AnyObject) {
         
         if self.peripheralManager.isAdvertising == false {
@@ -60,17 +85,17 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate, CLLocationM
             self.peripheralManager.stopAdvertising()
             self.view.backgroundColor = UIColor.redColor()
             self.startButtonOutlet.setTitle("Start", forState: UIControlState.Normal)
-            self.statusLabel.text = "Stoped"
+            self.statusLabel.text = "Stopped"
             println("stopped--")
 
         }
     }
-// check on this:
+// initial set-up (before button press)
     func peripheralManagerDidUpdateState(peripheral : CBPeripheralManager) {
         
         if peripheral.state == CBPeripheralManagerState.PoweredOn {
             // bluetooth on
-            println("broadcasting")
+            println("broadcasting1")
             self.view.backgroundColor = UIColor.greenColor()
             self.statusLabel.text = "Broadcasting ..."
             self.startButtonOutlet.setTitle("Stop", forState: UIControlState.Normal)
@@ -78,7 +103,7 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate, CLLocationM
             
         } else if peripheral.state == CBPeripheralManagerState.PoweredOff {
             // bluetooth is off - stop broadcasting
-            println("stopped")
+            println("stopped1")
             self.view.backgroundColor = UIColor.redColor()
             self.statusLabel.text = "Stoped"
             self.startButtonOutlet.setTitle("Start", forState: UIControlState.Normal)
@@ -88,6 +113,56 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate, CLLocationM
             // not supported
             println("unsupported")
         }
+    }
+    
+    // MARK: Region Monitoring
+    
+    func locationManager(manager: CLLocationManager!, didEnterRegion region: CLRegion!) {
+        
+        // start ranging for iBeacons
+//        self.locationManager.startRangingBeaconsInRegion(self.beaconRegion) //already called in ViewWillAppear
+        
+        self.regionStatusLabel.text = "Entered Region"
+        var localNotification = UILocalNotification()
+        localNotification.alertBody = "You have entered the region you are monitoring."
+        
+        localNotification.soundName = UILocalNotificationDefaultSoundName
+        localNotification.alertAction = "Details"
+        UIApplication.sharedApplication().presentLocalNotificationNow(localNotification)
+    }
+    
+    func locationManager(manager: CLLocationManager!, didExitRegion region: CLRegion!) {
+        
+        // stop ranging for iBeacons
+//        self.locationManager.stopRangingBeaconsInRegion(self.beaconRegion) // already called in ViewDidDisappear
+        
+        self.regionStatusLabel.text = "Exited Region"
+        self.beaconFoundLabel.text = "No"
+    }
+
+    func locationManager(manager: CLLocationManager!, didRangeBeacons beacons: [AnyObject]!, inRegion region: CLBeaconRegion!) {
+        var beacon : CLBeacon?
+        beacon = self.beacons.lastObject as? CLBeacon
+        
+        self.beaconFoundLabel.text = "Yes"
+        self.uuidLabel.text = beacon?.proximityUUID.UUIDString
+        self.majorLabel.text = beacon?.major.stringValue
+        self.minorLabel.text = beacon?.minor.stringValue
+        self.accuracyLabel.text = beacon?.accuracy.description //?
+        
+//        switch (beacon?.proximity) {
+//        case CLProximity.Unknown:
+//            self.distanceLabel.text = "Unknown Proximity"
+//        case CLProximity.Immediate:
+//            self.distanceLabel.text = "Immediate"
+//        case CLProximity.Near:
+//            self.distanceLabel.text = "Near"
+//        case CLProximity.Far:
+//            self.distanceLabel.text = "Far"
+//        case default:
+//            self.distanceLabel.text = "?"
+//        }
+        
     }
 }
 
