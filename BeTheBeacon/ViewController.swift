@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Michael Tirenin. All rights reserved.
 //
 // http://www.codemag.com/Article/1405051
+// http://ibeaconmodules.us/blogs/news/14702963-tutorial-swift-based-ibeacon-app-development-with-corelocation-on-apple-ios-7-8
 
 import UIKit
 import CoreBluetooth
@@ -26,8 +27,8 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate, CLLocationM
     @IBOutlet weak var rssiLabel: UILabel!
     @IBOutlet weak var regionStatusLabel: UILabel!
     
-//    let myUUID = NSUUID(UUIDString: "15D88457-4163-40D8-A795-F8A65CD8628B") //iPhone
-    let myUUID = NSUUID(UUIDString: "DBD9A703-CA23-4B95-9B63-1E847C1CE61A") //iPad
+    let myUUID = NSUUID(UUIDString: "15D88457-4163-40D8-A795-F8A65CD8628B") //iPhone
+//    let myUUID = NSUUID(UUIDString: "DBD9A703-CA23-4B95-9B63-1E847C1CE61A") //iPad
     let myIdentifier = "com.michaeltirenin.beacons.codefellows"
     
     var beaconData = NSDictionary()
@@ -49,7 +50,7 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate, CLLocationM
         
         self.locationManager.delegate = self
         
-        self.locationManager.startMonitoringForRegion(self.beaconRegion)
+//        self.locationManager.startMonitoringForRegion(self.beaconRegion)
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -137,31 +138,43 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate, CLLocationM
 //        self.locationManager.stopRangingBeaconsInRegion(self.beaconRegion) // already called in ViewDidDisappear
         
         self.regionStatusLabel.text = "Exited Region"
+        var localNotification = UILocalNotification()
+        localNotification.alertBody = "You have exited the region you are monitoring."
+
+        localNotification.soundName = UILocalNotificationDefaultSoundName
+        localNotification.alertAction = "Details"
+        UIApplication.sharedApplication().presentLocalNotificationNow(localNotification)
+
         self.beaconFoundLabel.text = "No"
+
     }
 
     func locationManager(manager: CLLocationManager!, didRangeBeacons beacons: [AnyObject]!, inRegion region: CLBeaconRegion!) {
-        var beacon : CLBeacon?
-        beacon = self.beacons.lastObject as? CLBeacon
+    
+        if beacons.count > 0 {
+            let nearestBeacon: CLBeacon = beacons.last as CLBeacon
         
-        self.beaconFoundLabel.text = "Yes"
-        self.uuidLabel.text = beacon?.proximityUUID.UUIDString
-        self.majorLabel.text = beacon?.major.stringValue
-        self.minorLabel.text = beacon?.minor.stringValue
-        self.accuracyLabel.text = beacon?.accuracy.description //?
+            self.beaconFoundLabel.text = "Yes"
+            self.uuidLabel.text = "\(nearestBeacon.proximityUUID.UUIDString)"
+            self.majorLabel.text = "\(nearestBeacon.major.integerValue)"
+            self.minorLabel.text = "\(nearestBeacon.minor.integerValue)"
+            self.accuracyLabel.text = "\(nearestBeacon.accuracy)"
+            self.rssiLabel.text = "\(nearestBeacon.rssi as Int)"
         
-//        switch (beacon?.proximity) {
-//        case CLProximity.Unknown:
-//            self.distanceLabel.text = "Unknown Proximity"
-//        case CLProximity.Immediate:
-//            self.distanceLabel.text = "Immediate"
-//        case CLProximity.Near:
-//            self.distanceLabel.text = "Near"
-//        case CLProximity.Far:
-//            self.distanceLabel.text = "Far"
-//        case default:
-//            self.distanceLabel.text = "?"
-//        }
+            switch nearestBeacon.proximity {
+            case CLProximity.Unknown:
+                self.distanceLabel.text = "Unknown Proximity"
+            case CLProximity.Immediate:
+                self.distanceLabel.text = "Immediate"
+            case CLProximity.Near:
+                self.distanceLabel.text = "Near"
+            case CLProximity.Far:
+                self.distanceLabel.text = "Far"
+            }
+
+        } else {
+            self.beaconFoundLabel.text = "None nearby"
+        }
         
     }
 }
