@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F22ACFEC19AB97AA0022EE44 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F22ACFEB19AB97AA0022EE44 /* CoreBluetooth.framework */; };
+		F22ACFEE19AB97B20022EE44 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F22ACFED19AB97B20022EE44 /* CoreLocation.framework */; };
 		F26A014B19A67076004B44E8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26A014A19A67076004B44E8 /* AppDelegate.swift */; };
 		F26A014E19A67076004B44E8 /* BeTheBeacon.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = F26A014C19A67076004B44E8 /* BeTheBeacon.xcdatamodeld */; };
 		F26A015019A67076004B44E8 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26A014F19A67076004B44E8 /* ViewController.swift */; };
@@ -26,6 +28,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		F22ACFEB19AB97AA0022EE44 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
+		F22ACFED19AB97B20022EE44 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		F26A014519A67076004B44E8 /* BeTheBeacon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BeTheBeacon.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F26A014919A67076004B44E8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F26A014A19A67076004B44E8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -43,6 +47,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F22ACFEE19AB97B20022EE44 /* CoreLocation.framework in Frameworks */,
+				F22ACFEC19AB97AA0022EE44 /* CoreBluetooth.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,6 +65,8 @@
 		F26A013C19A67076004B44E8 = {
 			isa = PBXGroup;
 			children = (
+				F22ACFED19AB97B20022EE44 /* CoreLocation.framework */,
+				F22ACFEB19AB97AA0022EE44 /* CoreBluetooth.framework */,
 				F26A014719A67076004B44E8 /* BeTheBeacon */,
 				F26A015D19A67076004B44E8 /* BeTheBeaconTests */,
 				F26A014619A67076004B44E8 /* Products */,
@@ -161,6 +169,11 @@
 				TargetAttributes = {
 					F26A014419A67076004B44E8 = {
 						CreatedOnToolsVersion = 6.0;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+						};
 					};
 					F26A015919A67076004B44E8 = {
 						CreatedOnToolsVersion = 6.0;

@@ -27,8 +27,8 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate, CLLocationM
     @IBOutlet weak var rssiLabel: UILabel!
     @IBOutlet weak var regionStatusLabel: UILabel!
     
-    let myUUID = NSUUID(UUIDString: "15D88457-4163-40D8-A795-F8A65CD8628B") //iPhone
-//    let myUUID = NSUUID(UUIDString: "DBD9A703-CA23-4B95-9B63-1E847C1CE61A") //iPad
+//    let myUUID = NSUUID(UUIDString: "15D88457-4163-40D8-A795-F8A65CD8628B") //iPhone
+    let myUUID = NSUUID(UUIDString: "DBD9A703-CA23-4B95-9B63-1E847C1CE61A") //iPad
     let myIdentifier = "com.michaeltirenin.beacons.codefellows"
     
     var beaconData = NSDictionary()
@@ -42,15 +42,25 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate, CLLocationM
     override func viewDidLoad() {
         super.viewDidLoad()
 
+//        if (UIDevice.currentDevice().systemVersion.substringToIndex(1).toInt() >= 8) {
+//            self.locationManager.requestAlwaysAuthorization()
+//        }
+        
         // initialize beacon region
-        self.beaconRegion = CLBeaconRegion(proximityUUID: myUUID, identifier: myIdentifier)
+        self.beaconRegion = CLBeaconRegion(proximityUUID: myUUID, major: 9, minor: 3, identifier: myIdentifier)
         self.beaconData = beaconRegion.peripheralDataWithMeasuredPower(nil)
         
         self.peripheralManager = CBPeripheralManager(delegate: self, queue: nil)
         
+//        if (locationManager.respondsToSelector("requestAlwaysAuthorization")) {
+//            locationManager.requestAlwaysAuthorization()
+//        }
         self.locationManager.delegate = self
-        
-//        self.locationManager.startMonitoringForRegion(self.beaconRegion)
+//        self.locationManager.pausesLocationUpdatesAutomatically = false
+
+        self.locationManager.startMonitoringForRegion(self.beaconRegion)
+//        self.locationManager.startRangingBeaconsInRegion(self.beaconRegion)
+//        self.locationManager.startUpdatingLocation()
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -60,11 +70,11 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate, CLLocationM
     }
     
     override func viewDidAppear(animated: Bool) {
-        locationManager.startRangingBeaconsInRegion(beaconRegion)
+//        locationManager.startRangingBeaconsInRegion(beaconRegion)
     }
     
     override func viewDidDisappear(animated: Bool) {
-        locationManager.stopRangingBeaconsInRegion(beaconRegion)
+//        locationManager.stopRangingBeaconsInRegion(beaconRegion)
     }
 
     override func didReceiveMemoryWarning() {
@@ -118,10 +128,16 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate, CLLocationM
     
     // MARK: Region Monitoring
     
+    func locationManager(manager: CLLocationManager!, didStartMonitoringForRegion region: CLRegion!) {
+        println("scanning")
+        self.locationManager.startRangingBeaconsInRegion(self.beaconRegion)
+    }
+    
     func locationManager(manager: CLLocationManager!, didEnterRegion region: CLRegion!) {
         
         // start ranging for iBeacons
-//        self.locationManager.startRangingBeaconsInRegion(self.beaconRegion) //already called in ViewWillAppear
+        self.locationManager.startRangingBeaconsInRegion(self.beaconRegion) //already called in ViewWillAppear
+        self.locationManager.startUpdatingLocation()
         
         self.regionStatusLabel.text = "Entered Region"
         var localNotification = UILocalNotification()
@@ -135,7 +151,8 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate, CLLocationM
     func locationManager(manager: CLLocationManager!, didExitRegion region: CLRegion!) {
         
         // stop ranging for iBeacons
-//        self.locationManager.stopRangingBeaconsInRegion(self.beaconRegion) // already called in ViewDidDisappear
+        self.locationManager.stopRangingBeaconsInRegion(self.beaconRegion) // already called in ViewDidDisappear
+        self.locationManager.stopUpdatingLocation()
         
         self.regionStatusLabel.text = "Exited Region"
         var localNotification = UILocalNotification()
@@ -146,16 +163,16 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate, CLLocationM
         UIApplication.sharedApplication().presentLocalNotificationNow(localNotification)
 
         self.beaconFoundLabel.text = "No"
-
     }
 
     func locationManager(manager: CLLocationManager!, didRangeBeacons beacons: [AnyObject]!, inRegion region: CLBeaconRegion!) {
     
         if beacons.count > 0 {
-            let nearestBeacon: CLBeacon = beacons.last as CLBeacon
+            let nearestBeacon = beacons[0] as CLBeacon
         
             self.beaconFoundLabel.text = "Yes"
             self.uuidLabel.text = "\(nearestBeacon.proximityUUID.UUIDString)"
+            println(self.uuidLabel.text)
             self.majorLabel.text = "\(nearestBeacon.major.integerValue)"
             self.minorLabel.text = "\(nearestBeacon.minor.integerValue)"
             self.accuracyLabel.text = "\(nearestBeacon.accuracy)"
@@ -175,7 +192,8 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate, CLLocationM
         } else {
             self.beaconFoundLabel.text = "None nearby"
         }
-        
     }
+    
+    
 }
 
