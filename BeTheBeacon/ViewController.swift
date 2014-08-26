@@ -55,12 +55,15 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate, CLLocationM
 //        if (locationManager.respondsToSelector("requestAlwaysAuthorization")) {
 //            locationManager.requestAlwaysAuthorization()
 //        }
+        
         self.locationManager.delegate = self
 //        self.locationManager.pausesLocationUpdatesAutomatically = false
 
         self.locationManager.startMonitoringForRegion(self.beaconRegion)
 //        self.locationManager.startRangingBeaconsInRegion(self.beaconRegion)
 //        self.locationManager.startUpdatingLocation()
+        
+        self.regionStatusLabel.text = "Entered Region"
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -151,8 +154,8 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate, CLLocationM
     func locationManager(manager: CLLocationManager!, didExitRegion region: CLRegion!) {
         
         // stop ranging for iBeacons
-        self.locationManager.stopRangingBeaconsInRegion(self.beaconRegion) // already called in ViewDidDisappear
-        self.locationManager.stopUpdatingLocation()
+//        self.locationManager.stopRangingBeaconsInRegion(self.beaconRegion) // already called in ViewDidDisappear
+//        self.locationManager.stopUpdatingLocation()
         
         self.regionStatusLabel.text = "Exited Region"
         var localNotification = UILocalNotification()
@@ -191,9 +194,14 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate, CLLocationM
 
         } else {
             self.beaconFoundLabel.text = "None nearby"
+            self.uuidLabel.text = "n/a"
+            self.majorLabel.text = "n/a"
+            self.minorLabel.text = "n/a"
+            self.accuracyLabel.text = "n/a"
+            self.rssiLabel.text = "n/a"
+            self.distanceLabel.text = "n/a"
+
         }
     }
-    
-    
 }
 
